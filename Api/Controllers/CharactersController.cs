@@ -41,33 +41,18 @@ namespace Api.Controllers
 
         // PUT: api/Characters/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, Character character)
+        [HttpPut("Update")]
+        public async Task<IActionResult> Update([FromBody]DTO entry)
         {
-            if (id != character.Id)
+            var character = await _context.Characters.FirstOrDefaultAsync(c => c.Id.ToString() == entry.Id);
+            if (character != null)
             {
-                return BadRequest();
-            }
-
-            _context.Entry(character).State = EntityState.Modified;
-
-            try
-            {
+                character.Likes++;
+                _context.Entry(character).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+                return Ok();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CharacterExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return NotFound();
         }
 
         // POST: api/Characters
@@ -89,7 +74,7 @@ namespace Api.Controllers
                 Species = entry.Species,
                 Status = entry.Status,
                 Likes = 0,
-                CreatedOn = entry.CreatedOn
+                CreatedOn = DateTime.Now,
             };
             _context.Characters.Add(character);
             await _context.SaveChangesAsync();
