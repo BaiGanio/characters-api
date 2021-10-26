@@ -40,23 +40,29 @@ namespace Api.Controllers
         }
 
         // PUT: api/Characters/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("Update")]
         public async Task<IActionResult> Update([FromBody]DTO entry)
         {
-            var character = await _context.Characters.FirstOrDefaultAsync(c => c.Id.ToString() == entry.Id);
-            if (character != null)
+            try
             {
-                character.Likes++;
-                _context.Entry(character).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return Ok();
+                var character = await _context.Characters.FirstOrDefaultAsync(c => c.Id.ToString() == entry.Id);
+                if (character != null)
+                {
+                    character.Likes++;
+                    _context.Entry(character).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                    return Ok($"Liked character {character.Name}");
+                }
+                return NotFound();
             }
-            return NotFound();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
 
         // POST: api/Characters
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult> Create(Character entry)
         {
